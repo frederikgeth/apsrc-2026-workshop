@@ -60,7 +60,7 @@
   time-width: auto,   // auto = as wide as the longest time; or a fixed width like 38mm
   time-color: primary,
   time-weight: 700,
-  row-pad: 7pt,
+  row-pad: 5.5pt,
   row-rule: 0.5pt + line-grey.darken(8%),
   break-fill: rgb("#F3F4F6"),
   session-size: 10.5pt,
@@ -69,8 +69,8 @@
   session-color: ink,
   talk-weight: 500,
   talk-marker: 1.5pt + primary.lighten(55%),
-  talk-list-gap: 0.55em,
-  two-columns-after: 6,
+  talk-list-gap: 0.4em,
+  two-columns-after: 10,   // more talks than this in a session -> two columns
 
   // Talk details
   talk-gap: 1.3em,

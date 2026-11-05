@@ -36,27 +36,38 @@ sessions:
       Opening remarks from RACE for 2030, then an overview of the day from the
       organisers, housekeeping, and an introduction to the all-day activities.
 
-  - time: "11:45 am – 12:45 pm"
-    title: "Panel session"
+  - time: "11:45 am – 12:15 pm"
+    title: "‘Short-circuit’ talks, part 1"
+    description: "Five-minute ‘lightning talks’ on open-source projects, tools and datasets."
+    talks: lightning-session-1
+
+  - time: "12:15 – 12:45 pm"
+    title: "Open floor: demos & discussion"
     description: >-
-      Presentations and a panel on ideas, issues and practice in open-source
-      energy modelling, opening up to questions and discussion from the floor.
-    talks: panel-session
+      Part 1 presenters host tables for demos, questions and discussion.
+      Explore the projects that interest you.
 
   - time: "12:45 – 1:30 pm"
     title: "Lunch"
     kind: break
 
-  - time: "1:30 – 2:30 pm"
-    title: "‘Short-circuit’ talks"
+  - time: "1:30 – 2:00 pm"
+    title: "‘Short-circuit’ talks, part 2"
     description: "Five-minute ‘lightning talks’ on open-source projects, tools and datasets."
-    talks: lightning-session
+    talks: lightning-session-2
 
-  - time: "2:30 – 3:30 pm"
+  - time: "2:00 – 2:30 pm"
     title: "Open floor: demos & discussion"
     description: >-
-      ‘Short-circuit’ presenters host tables for demos, questions and
-      discussion. Explore the projects that interest you.
+      Part 2 presenters host tables for demos, questions and discussion.
+      Explore the projects that interest you.
+
+  - time: "2:30 – 3:30 pm"
+    title: "Panel session"
+    description: >-
+      Presentations and a panel on ideas, issues and practice in open-source
+      energy modelling, opening up to questions and discussion from the floor.
+    talks: panel-session
 
   - time: "3:30 – 4:00 pm"
     title: "Wrap-up & next steps"
@@ -72,7 +83,10 @@ sessions:
 # Session folders in talks/, in the order their details appear in the full
 # program, with the heading used for each.
 talk-folders:
+  - folder: lightning-session-1
+    label: "‘Short-circuit’ talks, part 1"
+  - folder: lightning-session-2
+    label: "‘Short-circuit’ talks, part 2"
   - folder: panel-session
     label: "Panel session"
-  - folder: lightning-session
-    label: "‘Short-circuit’ talks"
+    new-page: true   # start this session on a new page in the PDF

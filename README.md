@@ -33,7 +33,7 @@ All in `_site/` (ignored by git):
 |------|--------------------|
 | `schedule.yml` | Event details (title, date, venue, logos), the running order of sessions, and the session folders |
 | `talks/panel-session/` | One file per panel-session presentation, named after the speaker |
-| `talks/lightning-session/` | One file per ‘short-circuit’ (lightning) talk, named after the speaker |
+| `talks/lightning-session-1/`, `talks/lightning-session-2/` | One file per ‘short-circuit’ (lightning) talk in parts 1 and 2, named after the speaker |
 | `talks/_template.md` | Copy this to add a talk |
 | `index.qmd`, `talks.qmd` | The two web pages |
 | `program.qmd` | Page order of the full program PDF |
@@ -47,15 +47,22 @@ All in `_site/` (ignored by git):
 ## Adding a talk
 
 1. Copy `talks/_template.md` into the right session folder, named after the
-   speaker, e.g. `talks/lightning-session/jane-smith.md`. The folder decides
+   speaker, e.g. `talks/lightning-session-1/jane-smith.md`. The folder decides
    which session the talk appears in.
-2. Fill in `order`, `title`, `speakers` and optional `links`.
+2. Fill in `order`, `title`, `authors` and optional `links`.
 3. Write the abstract below the `---` line.
 4. `quarto render`. The talk appears in both the schedule and the talk details.
 
-In the schedule, speakers show as "Name (affiliation-short)". The talk details
-show "Honorific Name, affiliation". If `affiliation-short` is missing, the full
-affiliation is used in both places.
+List `authors` in author order. With co-authors, mark the one presenting with
+`presenter: true` (otherwise the first author presents).
+
+- **Schedule:** the presenter only, as "Name (affiliation-short)".
+- **Talk details:** every author as "Honorific Name, affiliation", with the
+  presenter in bold (and labelled "(presenter)" when there are co-authors).
+
+`honorific` and `affiliation-short` are optional. Honorifics only appear for
+single-author talks, to keep longer author lists clean. Without `affiliation-short`,
+the full affiliation is used in both places.
 
 To add a new session folder, create it under `talks/` and list it under
 `talk-folders` in `schedule.yml` (with its heading), then point a session at it

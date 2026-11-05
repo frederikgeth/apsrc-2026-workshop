@@ -127,13 +127,29 @@
 
 #let speakers-short(speakers) = speakers.map(speaker-short).join(", ", last: " & ")
 
-// "Dr Name, Full Affiliation" for the talk details.
-#let speaker-full(sp, t) = {
-  text(weight: t.speaker-weight, {
-    if sp.honorific != none [#sp.honorific ]
-    sp.name
-  })
-  if sp.affiliation != none { text(fill: t.muted)[, #sp.affiliation] }
+// Paper-style author list for the talk details: names on one line (the
+// presenter in bold), then the affiliations. With more than one affiliation,
+// superscript numbers link each author to theirs. Honorifics (Dr, Prof...)
+// are shown for single authors only, to keep longer author lists clean.
+#let author-list(authors, affiliations, t) = {
+  let numbered = affiliations.len() > 1
+  let honorifics = authors.len() == 1
+  block(above: 0.3em, below: 0.35em, authors.map(a => {
+    text(weight: if a.presenter { t.speaker-weight } else { "regular" }, {
+      if honorifics and a.honorific != none [#a.honorific ]
+      a.name
+    })
+    if numbered and a.affil != none { super(str(a.affil)) }
+  }).join(", "))
+  if affiliations.len() > 0 {
+    block(above: 0.35em, below: 0.3em, text(fill: t.muted, {
+      if numbered {
+        affiliations.enumerate().map(((i, aff)) => [#super(str(i + 1))#aff]).join(h(1.2em))
+      } else {
+        affiliations.first()
+      }
+    }))
+  }
 }
 
 // Talks listed under a session in the schedule.
@@ -166,11 +182,12 @@
   // Narrow columns: ragged-right reads better than justified.
   set par(justify: false)
   let cells = ()
+  // Rows never split across pages: a session that does not fit moves whole.
   for s in sessions {
     let is-break = s.kind == "break"
     let fill = if is-break { t.break-fill } else { none }
-    cells.push(grid.cell(fill: fill, text(fill: t.time-color, weight: t.time-weight, s.time)))
-    cells.push(grid.cell(fill: fill, {
+    cells.push(grid.cell(fill: fill, breakable: false, text(fill: t.time-color, weight: t.time-weight, s.time)))
+    cells.push(grid.cell(fill: fill, breakable: false, {
       text(
         size: t.session-size,
         weight: if is-break { t.break-weight } else { t.session-weight },
@@ -197,9 +214,10 @@
 })
 
 // One talk in the details section.
-#let talk-entry(title: none, speakers: (), links: (), abstract: none) = with-theme(t => {
-  block(width: 100%, above: t.talk-gap, below: t.talk-gap, {
-    // Keep the title and speakers with the start of the abstract.
+#let talk-entry(title: none, authors: (), affiliations: (), links: (), abstract: none) = with-theme(t => {
+  // Keep each talk on one page (talks are much shorter than a page).
+  block(width: 100%, above: t.talk-gap, below: t.talk-gap, breakable: false, {
+    // Keep the title and authors with the start of the abstract.
     block(sticky: true, below: 0.9em, {
       set par(justify: false)
       block(below: 0.45em, text(
@@ -209,12 +227,13 @@
         fill: t.heading-color,
         title,
       ))
-      for sp in speakers { block(above: 0.3em, below: 0.3em, speaker-full(sp, t)) }
+      author-list(authors, affiliations, t)
     })
     abstract
     if links.len() > 0 {
       set text(size: t.small-size)
-      block(above: 1em, stack(spacing: 0.65em, ..links.map(l => {
+      // Keep a talk's links together on one page.
+      block(above: 1em, breakable: false, stack(spacing: 0.65em, ..links.map(l => {
         if l.label != none { text(weight: 600, l.label); [: ] }
         link(l.url, l.url.replace(regex("^https?://"), "").trim("/", at: end))
       })))

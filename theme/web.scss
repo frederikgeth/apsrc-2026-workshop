@@ -211,7 +211,7 @@ h2[id^="talks-"] {
 .talk {
   padding: 1.25rem 0;
   border-bottom: 1px solid $apsrc-line;
-  scroll-margin-top: 1rem;
+  scroll-margin-top: 5rem;   // clear the sticky navigation bar when linked to
 
   &:target .talk__title { text-decoration: underline; text-decoration-thickness: 2px; }
 }
@@ -223,11 +223,17 @@ h2[id^="talks-"] {
   margin: 0 0 0.35rem;
 }
 
-.talk__speakers { margin-bottom: 0.8rem; }
+.talk__authors { margin-bottom: 0.15rem; }
+.author--presenter { font-weight: 700; }
 
-.speaker { display: block; }
-.speaker__name { font-weight: 700; }
-.speaker__affiliation { color: $apsrc-grey; }
+.talk__affiliations {
+  color: $apsrc-grey;
+  margin-bottom: 0.8rem;
+
+  // Each affiliation wraps as a unit.
+  span { display: inline-block; margin-right: 1.1em; }
+  span:last-child { margin-right: 0; }
+}
 
 .talk__links {
   list-style: none;

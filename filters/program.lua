@@ -23,7 +23,7 @@
 local stringify = pandoc.utils.stringify
 
 -- More talks than this in a session -> shown in two columns.
-local TWO_COLUMNS_AFTER = 6
+local TWO_COLUMNS_AFTER = 10
 
 -- Metadata helpers -------------------------------------------------------
 
@@ -73,32 +73,84 @@ local function load_talk(path, folder, file)
   local doc = pandoc.read(read_file(path), "markdown")
   local m = doc.meta
 
-  local speakers, links = {}, {}
-  for _, sp in ipairs(as_list(m.speakers)) do
-    speakers[#speakers + 1] = {
-      name = inlines_or_nil(sp.name),
-      honorific = inlines_or_nil(sp.honorific),
-      affiliation = inlines_or_nil(sp.affiliation),
-      affiliation_short = inlines_or_nil(sp["affiliation-short"]),
-    }
+  local where = folder .. "/" .. file
+  if m.speakers and not m.authors then
+    quarto.log.warning("program.lua: " .. where .. " uses `speakers:`; rename it to `authors:`")
   end
+
+  -- Authors in author order; one of them presents.
+  local authors, presenter = {}, nil
+  for _, a in ipairs(as_list(m.authors or m.speakers)) do
+    local author = {
+      name = inlines_or_nil(a.name),
+      honorific = inlines_or_nil(a.honorific),
+      affiliation = inlines_or_nil(a.affiliation),
+      affiliation_short = inlines_or_nil(a["affiliation-short"]),
+      presenter = a.presenter == true,
+    }
+    if author.presenter then
+      if presenter then
+        quarto.log.warning("program.lua: " .. where .. " has more than one `presenter: true`; using the first")
+        author.presenter = false
+      else
+        presenter = author
+      end
+    end
+    authors[#authors + 1] = author
+  end
+  -- No presenter marked: the first author presents.
+  if not presenter and authors[1] then
+    presenter = authors[1]
+    presenter.presenter = true
+  end
+
+  -- Paper-style affiliations: each distinct affiliation gets a number (in
+  -- order of first appearance), and each author points to theirs.
+  local affiliations, affil_index = {}, {}
+  for _, a in ipairs(authors) do
+    if a.affiliation then
+      local key = stringify(a.affiliation)
+      if not affil_index[key] then
+        affiliations[#affiliations + 1] = a.affiliation
+        affil_index[key] = #affiliations
+      end
+      a.affil = affil_index[key]
+    end
+  end
+
+  -- Abstract: the file body, minus comments. Empty -> placeholder.
+  local abstract = doc.blocks:filter(function(b) return b.t ~= "RawBlock" end)
+  if #abstract == 0 then
+    abstract = pandoc.Blocks({ pandoc.Para({ pandoc.Emph(pandoc.Inlines("Abstract to come.")) }) })
+  end
+
+  local links = {}
   for _, l in ipairs(as_list(m.links)) do
     links[#links + 1] = { label = inlines_or_nil(l.label), url = stringify(l.url or "") }
   end
 
+  -- `tbc: true` marks an unconfirmed talk: "(TBC)" follows its title everywhere.
+  local title = inlines_or_nil(m.title)
+  if title and m.tbc == true then
+    title = title:clone()
+    title:extend({ pandoc.Space(), pandoc.Str("(TBC)") })
+  end
+
   return {
-    file = folder .. "/" .. file,
+    file = where,
     folder = folder,
     id = "talk-" .. (file:gsub("%.md$", "")),
     order = tonumber(stringify(m.order or "")) or math.huge,
-    title = inlines_or_nil(m.title),
-    speakers = speakers,
+    title = title,
+    authors = authors,
+    presenter = presenter,
+    affiliations = affiliations,
     links = links,
-    abstract = doc.blocks,
+    abstract = abstract,
   }
 end
 
--- Each subfolder of the talks folder is a session (e.g. talks/lightning-session/);
+-- Each subfolder of the talks folder is a session (e.g. talks/lightning-session-1/);
 -- the folder a talk file sits in decides which session it belongs to.
 local function load_talks(dir)
   local talks = {}
@@ -118,8 +170,17 @@ local function load_talks(dir)
       end
     elseif folder:match("%.md$") and not folder:match("^_") then
       quarto.log.warning("program.lua: talks/" .. folder ..
-        " is not in a session folder (e.g. talks/lightning-session/) and will not appear")
+        " is not in a session folder (e.g. talks/lightning-session-1/) and will not appear")
     end
+  end
+
+  -- Web link targets come from the file name ("talk-jane-smith"). When the
+  -- same name is used in more than one session folder, add the folder so
+  -- each talk's link stays unique ("talk-jane-smith-panel-session").
+  local seen = {}
+  for _, t in ipairs(talks) do seen[t.id] = (seen[t.id] or 0) + 1 end
+  for _, t in ipairs(talks) do
+    if seen[t.id] > 1 then t.id = t.id .. "-" .. t.folder end
   end
 
   -- Sort by `order`, then file name.
@@ -172,6 +233,7 @@ local function load_program(meta)
       folder = folder,
       label = inlines_or_nil(tf.label) or pandoc.Inlines(folder),
       talks = talks_in(talks, folder),
+      new_page = tf["new-page"] == true,
     }
   end
   for _, t in ipairs(talks) do
@@ -223,14 +285,16 @@ function T.dict(pairs_list)
   return "(" .. table.concat(parts, ", ") .. ")"
 end
 
-function T.speakers(speakers)
+function T.authors(authors)
   local out = {}
-  for _, sp in ipairs(speakers) do
+  for _, a in ipairs(authors) do
     out[#out + 1] = T.dict({
-      { "name", T.inl(sp.name) },
-      { "honorific", T.inl(sp.honorific) },
-      { "affiliation", T.inl(sp.affiliation) },
-      { "affiliation-short", T.inl(sp.affiliation_short) },
+      { "name", T.inl(a.name) },
+      { "honorific", T.inl(a.honorific) },
+      { "affiliation", T.inl(a.affiliation) },
+      { "affiliation-short", T.inl(a.affiliation_short) },
+      { "presenter", a.presenter and "true" or "false" },
+      { "affil", a.affil and tostring(a.affil) or "none" },
     })
   end
   return T.array(out)
@@ -255,7 +319,7 @@ function T.schedule(sessions)
   for _, s in ipairs(sessions) do
     local items = {}
     for _, t in ipairs(s.talks) do
-      items[#items + 1] = T.dict({ { "title", T.inl(t.title) }, { "speakers", T.speakers(t.speakers) } })
+      items[#items + 1] = T.dict({ { "title", T.inl(t.title) }, { "speakers", T.authors({ t.presenter }) } })
     end
     rows[#rows + 1] = T.dict({
       { "time", T.inl(s.time) },
@@ -280,10 +344,19 @@ function T.talks(groups)
         end
         entries[#entries + 1] = "#talk-entry(" .. table.concat({
           "title: " .. T.inl(t.title),
-          "speakers: " .. T.speakers(t.speakers),
+          "authors: " .. T.authors(t.authors),
+          "affiliations: " .. T.array((function()
+            local out = {}
+            for _, aff in ipairs(t.affiliations) do out[#out + 1] = T.inl(aff) end
+            return out
+          end)()),
           "links: " .. T.array(links),
           "abstract: " .. (#t.abstract > 0 and T.content(t.abstract) or "none"),
         }, ",\n  ") .. ")"
+      end
+      -- `weak: true` skips the break if the session already starts a page.
+      if g.new_page then
+        blocks:insert(pandoc.RawBlock("typst", "#pagebreak(weak: true)"))
       end
       -- Written as raw Typst: Quarto shifts pandoc heading levels for PDFs.
       blocks:insert(pandoc.RawBlock("typst", "#heading(level: 1)" .. T.inl(g.label) .. " <talks-" .. g.folder .. ">"))
@@ -364,7 +437,7 @@ function H.schedule(sessions, talks_page)
       local items = {}
       for _, t in ipairs(s.talks) do
         items[#items + 1] = '<li><a class="talk-link" href="' .. H.attr(talks_page) .. '#' .. t.id .. '">' .. H.inl(t.title) .. "</a>" ..
-          H.tag("span", "talk-link__speakers", H.speakers_short(t.speakers)) .. "</li>"
+          H.tag("span", "talk-link__speakers", H.speakers_short({ t.presenter })) .. "</li>"
       end
       local class = "session__talks" .. (#s.talks > TWO_COLUMNS_AFTER and " session__talks--columns" or "")
       body[#body + 1] = H.tag("ul", class, table.concat(items))
@@ -398,17 +471,26 @@ function H.talks(groups)
       blocks:insert(pandoc.Header(2, g.label, pandoc.Attr("talks-" .. g.folder)))
       local articles = {}
       for _, t in ipairs(g.talks) do
-        local speakers = {}
-        for _, sp in ipairs(t.speakers) do
-          local name = (sp.honorific and (H.inl(sp.honorific) .. " ") or "") .. H.inl(sp.name)
-          speakers[#speakers + 1] = '<span class="speaker">' .. H.tag("span", "speaker__name", name) ..
-            (sp.affiliation and H.tag("span", "speaker__affiliation", ", " .. H.inl(sp.affiliation)) or "") ..
-            "</span>"
+        -- Paper style: names on one line (presenter in bold), then the
+        -- affiliations, numbered with superscripts when there's more than one.
+        -- Honorifics are shown for single authors only.
+        local numbered = #t.affiliations > 1
+        local honorifics = #t.authors == 1
+        local authors = {}
+        for _, a in ipairs(t.authors) do
+          local name = ((honorifics and a.honorific) and (H.inl(a.honorific) .. " ") or "") .. H.inl(a.name)
+          authors[#authors + 1] = '<span class="author' .. (a.presenter and " author--presenter" or "") .. '">' ..
+            name .. ((numbered and a.affil) and ("<sup>" .. a.affil .. "</sup>") or "") .. "</span>"
+        end
+        local affils = {}
+        for i, aff in ipairs(t.affiliations) do
+          affils[#affils + 1] = "<span>" .. (numbered and ("<sup>" .. i .. "</sup>") or "") .. H.inl(aff) .. "</span>"
         end
         local parts = {
           '<article class="talk" id="' .. t.id .. '">',
           H.tag("h3", "talk__title", H.inl(t.title)),
-          H.tag("p", "talk__speakers", table.concat(speakers)),
+          H.tag("p", "talk__authors", table.concat(authors, ", ")),
+          #affils > 0 and H.tag("p", "talk__affiliations", table.concat(affils, " ")) or "",
           H.tag("div", "talk__abstract", H.blocks(t.abstract)),
         }
         if #t.links > 0 then
