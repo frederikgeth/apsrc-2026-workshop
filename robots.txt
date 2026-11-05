@@ -1,0 +1,1 @@
+Sitemap: https://openenergymodelling-au.github.io/apsrc-2026-workshop/sitemap.xml
