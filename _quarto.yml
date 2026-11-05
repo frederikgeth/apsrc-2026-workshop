@@ -1,0 +1,27 @@
+project:
+  output-dir: _output
+  render:
+    - program.qmd   # full program  -> _output/program.pdf
+    - schedule.qmd  # schedule only -> _output/schedule.pdf
+
+# Event details, session list and talk types live in schedule.yml.
+metadata-files:
+  - schedule.yml
+
+# Talks: one .md file per talk, in a subfolder per session (see talk-folders
+# in schedule.yml). Files starting with "_" are ignored.
+talks-dir: talks
+
+# Visual theme: loads theme/theme-<name>.typ.
+program-theme: apsrc
+
+format:
+  typst:
+    papersize: a4
+    font-paths:
+      - fonts
+    template-partials:
+      - theme/typst-template.typ
+      - theme/typst-show.typ
+    filters:
+      - filters/program.lua

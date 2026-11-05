@@ -1,0 +1,12 @@
+# Quarto build output
+_output/
+.quarto/
+/*.typ
+*_files/
+
+/.quarto/
+**/*.quarto_ipynb
+
+# Satoshi (Fontshare licence: no redistribution). Download it yourself:
+# https://www.fontshare.com/fonts/satoshi -> unzip the OTF files into fonts/satoshi/
+fonts/satoshi/

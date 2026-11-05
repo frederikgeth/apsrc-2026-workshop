@@ -1,0 +1,12 @@
+---
+# Full program: schedule, then talk details.
+# Both are built from schedule.yml and talks/.
+---
+
+::: {.program-schedule}
+:::
+
+{{< pagebreak >}}
+
+::: {.program-talks}
+:::

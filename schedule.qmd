@@ -1,0 +1,7 @@
+---
+# Schedule only (one page). Built from schedule.yml and talks/.
+hide-page-numbers: true
+---
+
+::: {.program-schedule}
+:::
