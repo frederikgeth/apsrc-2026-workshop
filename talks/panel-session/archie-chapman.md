@@ -3,7 +3,7 @@ order: 1
 
 title: "Trustworthy Computational Research in the Age of AI"
 
-speakers:
+authors:
   - name: Archie Chapman
     honorific: A/Prof
     affiliation: The University of Queensland
