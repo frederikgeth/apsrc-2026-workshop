@@ -46,7 +46,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-290d69d52ad317270d28be8f36f6a9b5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e3c70490d481f35d4a5a2df78f297f31.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -143,8 +143,9 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Sessions</h2>
    
   <ul>
-  <li><a href="#talks-panel-session" id="toc-talks-panel-session" class="nav-link active" data-scroll-target="#talks-panel-session">Panel session</a></li>
-  <li><a href="#talks-lightning-session" id="toc-talks-lightning-session" class="nav-link" data-scroll-target="#talks-lightning-session">‘Short-circuit’ talks</a></li>
+  <li><a href="#talks-lightning-session-1" id="toc-talks-lightning-session-1" class="nav-link active" data-scroll-target="#talks-lightning-session-1">‘Short-circuit’ talks, part 1</a></li>
+  <li><a href="#talks-lightning-session-2" id="toc-talks-lightning-session-2" class="nav-link" data-scroll-target="#talks-lightning-session-2">‘Short-circuit’ talks, part 2</a></li>
+  <li><a href="#talks-panel-session" id="toc-talks-panel-session" class="nav-link" data-scroll-target="#talks-panel-session">Panel session</a></li>
   </ul>
 </nav>
     </div>
@@ -173,12 +174,202 @@ ul.task-list li input[type="checkbox"] {
 <div class="draft-banner" role="note"><strong>Draft program.</strong> Times, talks and speakers may still
 change.</div>
 <p>Abstracts for the panel session and ‘short-circuit’ talks, in running order. For times, see the <a href="./index.html">schedule</a>.</p>
-<nav class="talks-jump" aria-label="Sessions">Jump to: <a href="#talks-panel-session">Panel session</a> · <a href="#talks-lightning-session">‘Short-circuit’ talks</a></nav>
+<nav class="talks-jump" aria-label="Sessions">Jump to: <a href="#talks-lightning-session-1">‘Short-circuit’ talks, part 1</a> · <a href="#talks-lightning-session-2">‘Short-circuit’ talks, part 2</a> · <a href="#talks-panel-session">Panel session</a></nav>
+<section id="talks-lightning-session-1" class="level2">
+<h2 class="anchored" data-anchor-id="talks-lightning-session-1">‘Short-circuit’ talks, part 1</h2>
+<article class="talk" id="talk-ghulam-mohy-ud-din">
+<h3 class="talk__title anchored">NEMX.jl: an open-source Julia package for NEM dispatch modelling</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr Ghulam Mohy Ud Din</span></p>
+<p class="talk__affiliations"><span>CSIRO</span></p>
+<div class="talk__abstract"><p>NEMX.jl is a Julia package for simulating dispatch in the Australian
+National Electricity Market. It provides three complementary dispatch
+models: (1) a zonal model that runs directly on the NEMDE/NEMWEB
+database and reproduces historical dispatch prices; (2) a nodal model
+built on the physical Synthetic NEM Network, also driven by NEMWEB data,
+which reproduces dispatch prices under a range of network formulations
+from DC through convex relaxations to non-convex AC representations; and
+(3) lightweight OPF/FCAS models designed for long-term, market-informed
+planning studies.</p>
+<p>The session will give an overview of the package and its
+capabilities, present benchmark simulations against historical NEM
+outcomes, and walk through how to set up and run the tool. It will close
+with a live demonstration of a BESS dispatch investigative study,
+showing how NEMX.jl can be used to analyze storage behavior and its
+impact on market outcomes.</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">Repository</span>: <a href="https://github.com/csiro/ensys-NEMX.jl">github.com/csiro/ensys-NEMX.jl</a></li><li><span class="talk__link-label">Documentation and BESS study</span>: <a href="https://csiro.github.io/ensys-NEMX.jl/dev/bess_study/">csiro.github.io/ensys-NEMX.jl/dev/bess_study</a></li></ul>
+</article>
+<article class="talk" id="talk-ellie-kallmier">
+<h3 class="talk__title anchored">Open-ISP: an open-source electricity system model based on AEMO’s
+Integrated System Plan</h3>
+<p class="talk__authors"><span class="author author--presenter">Ellie Kallmier</span>, <span class="author">Dylan McConnell</span>, <span class="author">Nicholas Gorman</span></p>
+<p class="talk__affiliations"><span>The University of New South Wales</span></p>
+<div class="talk__abstract"><p>The Open-ISP project is building a fully open-source, transparent
+modelling platform based on the Australian Energy Market Operator’s
+(AEMO) Integrated System Plan (ISP) methodology and data. This
+initiative aims to facilitate wider access to energy system modelling
+and enable more rapid, inclusive collaboration across researchers,
+policymakers, and institutions. This demonstration will provide an
+in-depth introduction to the Open-ISP modelling suite and an open forum
+for dialogue, feedback, and knowledge exchange with the broader energy
+research community.</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">Open-ISP project</span>: <a href="https://github.com/Open-ISP">github.com/Open-ISP</a></li></ul>
+</article>
+<article class="talk" id="talk-tim-kopka">
+<h3 class="talk__title anchored">Resource Adequacy, Risk, and Resilience in Low-Carbon Energy System
+Planning: Methods, Tools, and Metrics</h3>
+<p class="talk__authors"><span class="author author--presenter">Tim Kopka</span></p>
+<p class="talk__affiliations"><span>The University of Melbourne</span></p>
+<div class="talk__abstract"><p>With the projected retirement of thermal coal power plants and the
+associated increase in the penetration of variable renewable energy
+sources and storage in the National Electricity Market (NEM), ensuring
+reliability across all timesteps will depend strongly on the operation
+of storage units. In adequacy assessments, storage behaviour is often
+simplified, adopting, for example, perfect foresight of outage
+conditions or heuristic, adequacy-optimistic operational approximations.
+However, operational experience increasingly challenges these
+assumptions, highlighting a discrepancy between modelled and real-world
+storage behaviour and leaving the implications of these approximations
+for NEM adequacy uncertain. To support reliability planning in the NEM,
+we present an open-source adequacy assessment methodology and related
+tools developed as part of the Australian Research in Power Systems
+Transition (AR-PST) Stage 5. We evaluate adequacy under AEMO’s 2024
+Integrated System Plan assumptions, comparing different operational
+representations and their implications for reliability. Results show
+that reliability levels of the NEM become sensitive to storage operation
+approximations post-2030, and assumptions about state of charge,
+charging behaviour, and dispatch incentives materially change the
+estimated reliability risk.</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">Modelling suite</span>: <a href="https://github.com/ARPST-UniMelb">github.com/ARPST-UniMelb</a></li></ul>
+</article>
+<article class="talk" id="talk-michael-thomas-lightning-session-1">
+<h3 class="talk__title anchored">Energy Research Information Stack (ERIS)</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr Michael Thomas</span></p>
+<p class="talk__affiliations"><span>The Australian National University</span></p>
+<div class="talk__abstract"><p>We are seeing research projects emerge that combine two or more
+actively developed open-source energy modelling tools in fun and
+interesting ways. However, combining these tools on an ad-hoc and manual
+basis is not only time consuming, but minimises understandability,
+robustness and reusability. ACES has developed an ecosystem of software
+packages, called the Energy Research Information Stack (ERIS), to
+improve the interoperability of existing and emerging open-source
+modelling software.</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">ERIS</span>: <a href="https://bsgip.github.io/eris/">bsgip.github.io/eris</a></li></ul>
+</article>
+<article class="talk" id="talk-adnan-qamar">
+<h3 class="talk__title anchored">Model-Based Systems Engineering for Alumina Decarbonisation</h3>
+<p class="talk__authors"><span class="author author--presenter">Adnan Qamar</span></p>
+<p class="talk__affiliations"><span>CSIRO</span></p>
+<div class="talk__abstract"><p>As part of Work Package 4 of the HILT CRC, NEAC is applying a
+Model-Based Systems Engineering (MBSE) framework, integrated with
+Hetero-Functional Graph Theory (HFGT), to support decarbonisation
+planning for Australian heavy industry. The current case study focuses
+on the Worsley alumina refinery, where a formally verified systems model
+has been developed to represent the Bayer process, including digestion,
+evaporation, precipitation, calcination, and associated steam and water
+networks.</p>
+<p>Rather than constructing standalone demand or supply models, the
+framework provides an integrated representation of industrial processes
+and multi-carrier energy systems within a single optimisation
+environment. This enables the evaluation of technology substitution
+pathways, electrification strategies, and carbon-price scenarios while
+preserving system-level operational constraints.</p>
+<p>The approach supports identification of least-cost decarbonisation
+pathways, quantification of fuel-switching thresholds, and assessment of
+infrastructure requirements under alternative transition scenarios. The
+presentation will demonstrate how systems engineering methods can
+enhance transparency, reproducibility, and cross-sector integration in
+industrial decarbonisation studies, and will discuss opportunities for
+open and interoperable modelling tools within the broader energy
+modelling community.</p></div>
+</article>
+<article class="talk" id="talk-dora-he">
+<h3 class="talk__title anchored">How open is your modelling?</h3>
+<p class="talk__authors"><span class="author">Wendy Russell<sup>1</sup></span>, <span class="author author--presenter">Dora He<sup>1</sup></span>, <span class="author">Ehsan Nabavi<sup>1</sup></span>, <span class="author">Sophie Adams<sup>2</sup></span></p>
+<p class="talk__affiliations"><span><sup>1</sup>The Australian National University</span> <span><sup>2</sup>La Trobe University</span></p>
+<div class="talk__abstract"><p>We have been working on how to open up energy modelling to social
+insights and participatory processes. Much modelling deals with social
+dimensions of the energy system (e.g.&nbsp;consumer actions and practices;
+decisions of individuals and organisations; equity and the distribution
+of costs, benefits and risks), but often through assumptions that are
+not always supported with social evidence, nor transparent to the users
+of modelling outputs. In addition, while modelling can underpin
+operational, investment and policy decisions with wide-reaching social
+implications, it often excludes input and engagement by non-experts and
+the publics it is intended to ultimately benefit.</p>
+<p>Our research considers ways to integrate social insights into
+modelling, using both quantitative and qualitative approaches, and how
+to use models to engage with different stakeholders and publics. We are
+looking at iterative ways that use models to communicate about systems
+with non-experts, and to use non-expert input to refine models. We will
+briefly discuss our progress and approaches, and invite workshop
+participants to discuss with us how their models could be used to open
+up to non-expert participation.</p></div>
+</article>
+</section>
+<section id="talks-lightning-session-2" class="level2">
+<h2 class="anchored" data-anchor-id="talks-lightning-session-2">‘Short-circuit’ talks, part 2</h2>
+<article class="talk" id="talk-jenny-haywood">
+<h3 class="talk__title anchored">Modelling green industrial hubs in Indonesia</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr Jenny Haywood</span></p>
+<p class="talk__affiliations"><span>CSIRO</span></p>
+<div class="talk__abstract"><p>The Government of Indonesia (GoI) is interested in developing new
+industrial hubs that support the use of local capabilities, including
+workforce and skills, renewable energy resources, land and
+infrastructure. CSIRO has developed an online modelling tool to support
+the GoI in decision-making on the supply of energy infrastructure to
+meet the demand of new industrial hubs. The model optimises for
+least-cost supply of energy (electricity and hydrogen), within
+constraints such as land, renewable energy resources, transmission and
+government policy. The tool will be demonstrated during the
+presentation, for a case study site in Indonesia, Batam Island.</p></div>
+</article>
+<article class="talk" id="talk-daniel-condon">
+<h3 class="talk__title anchored">Historical Weather Trace dataset (TBC)</h3>
+<p class="talk__authors"><span class="author author--presenter">Daniel Condon</span></p>
+<p class="talk__affiliations"><span>Australian Energy Market Commission</span></p>
+<div class="talk__abstract"><p><em>Abstract to come.</em></p></div>
+</article>
+<article class="talk" id="talk-markus-mannheim">
+<h3 class="talk__title anchored">Modelling investment uncertainty: agent-based modelling to quantify
+economic uncertainty</h3>
+<p class="talk__authors"><span class="author author--presenter">Markus Mannheim</span></p>
+<p class="talk__affiliations"><span>Department of Climate Change, Energy, the Environment and Water</span></p>
+<div class="talk__abstract"><p>Modelling investment uncertainty: agent-based modelling to quantify
+economic uncertainty for different parties, to inform government
+decision making.</p>
+<p><em>More to come.</em></p></div>
+</article>
+<article class="talk" id="talk-fred-geth-lightning-session-2">
+<h3 class="talk__title anchored">OPF tools and ‘experiments in the browser’</h3>
+<p class="talk__authors"><span class="author author--presenter">Prof Fred Geth</span></p>
+<p class="talk__affiliations"><span>The University of Queensland</span></p>
+<div class="talk__abstract"><p>BMOPFTools is a Julia library connecting network-data diagnostics,
+geospatial review, and multiconductor power-flow and optimal power flow
+(OPF) workflows. Import OpenDSS or BMOPF cases, investigate modelling
+inconsistencies, prepare study scenarios, and check the resulting
+solutions—with explicit assumptions and traceable transformations.</p>
+<p>Presentation on experience of running everything in the browser</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">Paper (arXiv)</span>: <a href="https://arxiv.org/abs/2610.01922">arxiv.org/abs/2610.01922</a></li><li><span class="talk__link-label">Tellegen</span>: <a href="https://tellegen.dev/">tellegen.dev</a></li><li><span class="talk__link-label">Tellegen repository</span>: <a href="https://github.com/eigenergy/tellegen">github.com/eigenergy/tellegen</a></li><li><span class="talk__link-label">PowerIO</span>: <a href="https://powerio.dev/">powerio.dev</a></li><li><span class="talk__link-label">PowerIO repository</span>: <a href="https://github.com/eigenergy/powerio">github.com/eigenergy/powerio</a></li><li><span class="talk__link-label">BMOPFTools</span>: <a href="https://github.com/frederikgeth/BMOPFTools.jl">github.com/frederikgeth/BMOPFTools.jl</a></li><li><span class="talk__link-label">IEEE taskforce community</span>: <a href="https://github.com/distribution-system-opt/math-and-data-model-specifications">github.com/distribution-system-opt/math-and-data-model-specifications</a></li></ul>
+</article>
+<article class="talk" id="talk-sleiman-mhanna">
+<h3 class="talk__title anchored">BMOPF tools (TBC)</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr Sleiman Mhanna</span></p>
+<p class="talk__affiliations"><span>The University of Melbourne</span></p>
+<div class="talk__abstract"><p><em>Abstract to come.</em></p></div>
+</article>
+<article class="talk" id="talk-tim-weber">
+<h3 class="talk__title anchored">FIRM</h3>
+<p class="talk__authors"><span class="author author--presenter">Tim Weber</span></p>
+<p class="talk__affiliations"><span>The Australian National University</span></p>
+<div class="talk__abstract"><p><em>Abstract to come.</em></p></div>
+</article>
+</section>
 <section id="talks-panel-session" class="level2">
 <h2 class="anchored" data-anchor-id="talks-panel-session">Panel session</h2>
 <article class="talk" id="talk-archie-chapman">
 <h3 class="talk__title anchored">Trustworthy Computational Research in the Age of AI</h3>
-<p class="talk__speakers"><span class="speaker"><span class="speaker__name">A/Prof Archie Chapman</span><span class="speaker__affiliation">, The University of Queensland</span></span></p>
+<p class="talk__authors"><span class="author author--presenter">A/Prof Archie Chapman</span></p>
+<p class="talk__affiliations"><span>The University of Queensland</span></p>
 <div class="talk__abstract"><p>Generative AI is rapidly becoming embedded in software- and
 data-intensive research, creating new opportunities alongside new
 integrity risks. Drawing on the principles of the Australian Code for
@@ -196,28 +387,32 @@ integrity principles; rather, it makes rigorous computational research
 practices more important than ever, while also creating new
 opportunities for research translation and impact.</p></div>
 </article>
-</section>
-<section id="talks-lightning-session" class="level2">
-<h2 class="anchored" data-anchor-id="talks-lightning-session">‘Short-circuit’ talks</h2>
-<article class="talk" id="talk-ghulam-mohy-ud-din">
-<h3 class="talk__title anchored">NEMX.jl: an open-source Julia package for NEM dispatch modelling</h3>
-<p class="talk__speakers"><span class="speaker"><span class="speaker__name">Dr Ghulam Mohy Ud Din</span><span class="speaker__affiliation">, CSIRO</span></span></p>
-<div class="talk__abstract"><p>NEMX.jl is a Julia package for simulating dispatch in the Australian
-National Electricity Market. It provides three complementary dispatch
-models: (1) a zonal model that runs directly on the NEMDE/NEMWEB
-database and reproduces historical dispatch prices; (2) a nodal model
-built on the physical Synthetic NEM Network, also driven by NEMWEB data,
-which reproduces dispatch prices under a range of network formulations
-from DC through convex relaxations to non-convex AC representations; and
-(3) lightweight OPF/FCAS models designed for long-term, market-informed
-planning studies.</p>
-<p>The session will give an overview of the package and its
-capabilities, present benchmark simulations against historical NEM
-outcomes, and walk through how to set up and run the tool. It will close
-with a live demonstration of a BESS dispatch investigative study,
-showing how NEMX.jl can be used to analyze storage behavior and its
-impact on market outcomes.</p></div>
-<ul class="talk__links"><li><span class="talk__link-label">Repository</span>: <a href="https://github.com/csiro/ensys-NEMX.jl">github.com/csiro/ensys-NEMX.jl</a></li><li><span class="talk__link-label">Documentation and BESS study</span>: <a href="https://csiro.github.io/ensys-NEMX.jl/dev/bess_study/">csiro.github.io/ensys-NEMX.jl/dev/bess_study</a></li></ul>
+<article class="talk" id="talk-michael-thomas-panel-session">
+<h3 class="talk__title anchored">Interoperability in open-source energy modelling tools</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr Michael Thomas</span></p>
+<p class="talk__affiliations"><span>The Australian National University</span></p>
+<div class="talk__abstract"><p>.. to fully realise the potential of interoperable open-source
+software, we suggest growing and supporting a strong and enthusiastic
+energy modelling community. In this workshop we will discuss the steps
+need to achieve interoperability in open-source energy modelling tools
+and ask open questions on how we might go about growing and supporting
+the Australian energy modelling community.</p></div>
+<ul class="talk__links"><li><span class="talk__link-label">ERIS</span>: <a href="https://bsgip.github.io/eris/">bsgip.github.io/eris</a></li></ul>
+</article>
+<article class="talk" id="talk-james-foster">
+<h3 class="talk__title anchored">Open-source modelling at CSIRO</h3>
+<p class="talk__authors"><span class="author author--presenter">Dr James Foster</span></p>
+<p class="talk__affiliations"><span>CSIRO</span></p>
+<div class="talk__abstract"><p>The story of how we’ve evolved over time to using increasing
+open-source modelling in our work and the various transition points
+along the way that we chose based on the circumstances at the time.</p>
+<p><em>More to come.</em></p></div>
+</article>
+<article class="talk" id="talk-fred-geth-panel-session">
+<h3 class="talk__title anchored">Building communities around open-source energy models</h3>
+<p class="talk__authors"><span class="author author--presenter">Prof Fred Geth</span></p>
+<p class="talk__affiliations"><span>The University of Queensland</span></p>
+<div class="talk__abstract"><p><em>Abstract to come.</em></p></div>
 </article>
 
 
