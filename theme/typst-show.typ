@@ -4,4 +4,5 @@
   title: [$if(event.footer)$$event.footer$$else$$event.title$$endif$],
   footer: [$if(event.footer)$$event.footer$$else$$event.title$$endif$$if(event.date)$ · $event.date$$endif$],
   page-numbers: $if(hide-page-numbers)$false$else$true$endif$,
+  draft: $if(draft-notice)$true$else$false$endif$,
 )

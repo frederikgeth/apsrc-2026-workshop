@@ -4,6 +4,10 @@
 # Talks are NOT listed here: a session with `talks: <folder>` pulls in every
 # file in talks/<folder>/, sorted by each file's `order:` field.
 
+# Draft notice: a banner on the web pages and in the PDFs, plus a "DRAFT"
+# watermark on PDF pages. Delete this line once the program is final.
+draft-notice: "**Draft program.** Times, talks and speakers may still change."
+
 event:
   kicker: "2026 Asia-Pacific Solar Research Conference"
   title: "Open-Source Energy System Modelling Workshop"

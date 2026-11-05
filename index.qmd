@@ -1,0 +1,17 @@
+---
+# Web: schedule page. Built from schedule.yml and talks/ (the same sources
+# as the PDFs). Talk titles link to the details on talks.qmd.
+format: html
+pagetitle: "Open-Source Energy System Modelling Workshop · APSRC 2026"
+---
+
+::: {.program-header}
+:::
+
+::: {.program-downloads}
+[Full program (PDF)](program.pdf){.btn .btn-primary}
+[Schedule only (PDF)](schedule.pdf){.btn .btn-outline-primary}
+:::
+
+::: {.program-schedule header="false" talks-page="talks.html"}
+:::

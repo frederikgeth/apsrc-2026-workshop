@@ -14,7 +14,7 @@
 #let meta-sep = [ · ]
 
 // Whole-document set-up: page, fonts, headings, footer.
-#let program-doc(theme: none, title: none, footer: none, page-numbers: true, body) = {
+#let program-doc(theme: none, title: none, footer: none, page-numbers: true, draft: false, body) = {
   let t = theme
   set document(title: title)
   theme-state.update(t)
@@ -22,6 +22,10 @@
   set page(
     paper: "a4",
     margin: t.margin,
+    // Faint diagonal "DRAFT" across every page while the program is a draft.
+    background: if draft {
+      rotate(-40deg, text(font: t.heading-font, size: 130pt, weight: 700, fill: t.watermark, tracking: 0.05em)[DRAFT])
+    },
     footer: {
       set text(font: t.body-font, size: t.small-size, fill: t.muted)
       footer
@@ -53,6 +57,17 @@
   body
 }
 
+// Draft notice above the header.
+#let draft-banner(body, t) = block(
+  width: 100%,
+  inset: (x: 10pt, y: 7pt),
+  below: 1.2em,
+  radius: 3pt,
+  fill: t.draft-fill,
+  stroke: 0.8pt + t.draft-stroke,
+  text(size: t.small-size + 0.6pt, body),
+)
+
 // Title block at the top of the schedule.
 #let event-header(
   kicker: none,
@@ -62,10 +77,12 @@
   venue: none,
   note: none,
   logos: (),
+  draft: none,
 ) = with-theme(t => {
   set align(t.header-align)
   set text(hyphenate: false)
   set par(justify: false)
+  if draft != none { draft-banner(draft, t) }
   block(width: 100%, below: 1.2em, {
     if kicker != none and t.show-kicker {
       block(below: 0.55em, text(

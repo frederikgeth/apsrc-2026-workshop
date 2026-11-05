@@ -1,10 +1,39 @@
 project:
-  output-dir: _output
+  type: website
+  output-dir: _site
   render:
-    - program.qmd   # full program  -> _output/program.pdf
-    - schedule.qmd  # schedule only -> _output/schedule.pdf
+    - index.qmd     # web: schedule -> _site/index.html
+    - talks.qmd     # web: talks    -> _site/talks.html
+    - program.qmd   # full program  -> _site/program.pdf
+    - schedule.qmd  # schedule only -> _site/schedule.pdf
 
-# Event details, session list and talk types live in schedule.yml.
+website:
+  title: "Open-Source Energy System Modelling Workshop · APSRC 2026"
+  description: "Program for the Open-Source Energy System Modelling Workshop at the 2026 Asia-Pacific Solar Research Conference."
+  site-url: https://openenergymodelling-au.github.io/apsrc-2026-workshop/
+  repo-url: https://github.com/openenergymodelling-au/apsrc-2026-workshop
+  navbar:
+    title: "Open-Source Energy System Modelling Workshop"
+    left:
+      - text: Schedule
+        href: index.qmd
+      - text: Talks
+        href: talks.qmd
+      - text: Downloads
+        menu:
+          - text: Full program (PDF)
+            href: program.pdf
+          - text: Schedule only (PDF)
+            href: schedule.pdf
+    right:
+      - icon: github
+        href: https://github.com/openenergymodelling-au/apsrc-2026-workshop
+        aria-label: Source on GitHub
+  page-footer:
+    left: "Part of the [2026 Asia-Pacific Solar Research Conference](https://event.fourwaves.com/2026apsrc)"
+    right: "[Source on GitHub](https://github.com/openenergymodelling-au/apsrc-2026-workshop)"
+
+# Event details, session list and talk folders live in schedule.yml.
 metadata-files:
   - schedule.yml
 
@@ -12,10 +41,21 @@ metadata-files:
 # in schedule.yml). Files starting with "_" are ignored.
 talks-dir: talks
 
-# Visual theme: loads theme/theme-<name>.typ.
+# Builds the header, schedule and talk details for both the web page and PDFs.
+filters:
+  - filters/program.lua
+
+# PDF theme: loads theme/theme-<name>.typ.
 program-theme: apsrc
 
 format:
+  html:
+    theme: [cosmo, theme/web.scss]
+    # Satoshi, served by Fontshare (the font files can't go in this repo).
+    include-in-header:
+      text: |
+        <link rel="preconnect" href="https://api.fontshare.com">
+        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap">
   typst:
     papersize: a4
     font-paths:
@@ -23,5 +63,3 @@ format:
     template-partials:
       - theme/typst-template.typ
       - theme/typst-show.typ
-    filters:
-      - filters/program.lua

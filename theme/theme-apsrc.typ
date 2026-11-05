@@ -32,6 +32,9 @@
   link-color: primary,
   heading-color: primary,
   todo-fill: rgb("#FFF6DC"),
+  draft-fill: rgb("#FFF6DC"),     // draft notice banner
+  draft-stroke: rgb("#E3BD4F"),
+  watermark: luma(94%),           // "DRAFT" across each page
   todo-stroke: rgb("#E3BD4F"),
 
   // Header

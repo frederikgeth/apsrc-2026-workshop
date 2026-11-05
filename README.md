@@ -1,21 +1,29 @@
 # APSRC Open-Source Energy System Modelling Workshop: program
 
-Quarto + Typst source for the program of the Open-Source Energy System
-Modelling Workshop at the 2026 Asia-Pacific Solar Research Conference (APSRC).
+Quarto source for the program of the Open-Source Energy System Modelling
+Workshop at the 2026 Asia-Pacific Solar Research Conference (APSRC): a web page
+plus PDFs, all built from one markdown file per talk.
+
+Website: <https://openenergymodelling-au.github.io/apsrc-2026-workshop/>
 
 ## Build
 
 ```sh
-quarto render                # -> _output/program.pdf and _output/schedule.pdf
-quarto render schedule.qmd   # just the one-page schedule
+quarto render                # web page + both PDFs -> _site/
+quarto render schedule.qmd   # just the one-page schedule PDF
+quarto preview               # live preview in the browser while editing
 ```
 
 Requires Quarto ≥ 1.11 (bundles Typst 0.15) and the Satoshi font (see [Fonts](#fonts)).
 
 ## Outputs
 
+All in `_site/` (ignored by git):
+
 | File | Contents |
 |------|----------|
+| `index.html` | Web: schedule page (header, PDF downloads, schedule) |
+| `talks.html` | Web: talks page (all abstracts, with links between sessions) |
 | `program.pdf` | Schedule, then details of every talk |
 | `schedule.pdf` | One-page schedule only |
 
@@ -27,10 +35,13 @@ Requires Quarto ≥ 1.11 (bundles Typst 0.15) and the Satoshi font (see [Fonts](
 | `talks/panel-session/` | One file per panel-session presentation, named after the speaker |
 | `talks/lightning-session/` | One file per ‘short-circuit’ (lightning) talk, named after the speaker |
 | `talks/_template.md` | Copy this to add a talk |
-| `program.qmd` | Page order of the full program (schedule, then talk details) |
-| `theme/theme-apsrc.typ` | Fonts, colours, sizes |
-| `theme/layout.typ` | How the schedule and talk details are arranged |
-| `filters/program.lua` | Reads `schedule.yml` and `talks/` and builds the schedule and talk details |
+| `index.qmd`, `talks.qmd` | The two web pages |
+| `program.qmd` | Page order of the full program PDF |
+| `_quarto.yml` | Website settings (title, navigation bar, footer) and build options |
+| `theme/web.scss` | Web page fonts, colours and layout |
+| `theme/theme-apsrc.typ` | PDF fonts, colours, sizes |
+| `theme/layout.typ` | How the PDF schedule and talk details are arranged |
+| `filters/program.lua` | Reads `schedule.yml` and `talks/` and builds the header, schedule and talk details for both the web page and PDFs |
 | `fonts/` | Where the Satoshi font files go (see below) |
 
 ## Adding a talk
@@ -49,6 +60,22 @@ affiliation is used in both places.
 To add a new session folder, create it under `talks/` and list it under
 `talk-folders` in `schedule.yml` (with its heading), then point a session at it
 with `talks: <folder>`.
+
+## Publishing to GitHub Pages
+
+The site is built on your machine (where Satoshi is installed, so the PDFs come
+out right) and pushed to the `gh-pages` branch, which GitHub Pages serves:
+
+```sh
+quarto publish gh-pages
+```
+
+The first time, this creates the `gh-pages` branch and a `_publish.yml` file
+(commit that). Then in the repo's **Settings → Pages**, set the source to
+**Deploy from a branch**, branch `gh-pages`, folder `/ (root)`.
+
+Push source changes to `main` as usual (`git push origin main`); publishing is
+a separate step. Avoid `git push --all`.
 
 ## Changing the look
 
@@ -73,5 +100,8 @@ To list the fonts Typst can see: `quarto typst fonts --font-path fonts`.
 
 ## Notes
 
+- **Draft notice:** while `draft-notice:` is set in `schedule.yml`, a banner
+  appears on the web pages and above the PDF schedule, and PDF pages carry a
+  faint "DRAFT" watermark. Delete that line once the program is final.
 - `::: {.todo}` blocks in a `.qmd` file render as highlighted "To do" boxes, to mark placeholders.
 - The talk files are plain markdown with YAML front matter, so a website can reuse them later.

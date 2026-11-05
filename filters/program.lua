@@ -1,5 +1,7 @@
 -- program.lua
--- Builds the schedule and talk details for the PDF (Typst) output.
+-- Builds the event header, schedule and talk details for both outputs:
+--   * PDF (Typst): calls the layout functions in theme/layout.typ
+--   * Web (HTML):  writes HTML styled by theme/web.scss
 --
 -- Data comes from:
 --   * schedule.yml (loaded as metadata by _quarto.yml): event details,
@@ -7,60 +9,40 @@
 --   * talks/<session-folder>/*.md: one file per talk (files starting with "_" are skipped)
 --
 -- Placeholders in the .qmd files:
---   ::: {.program-schedule}  -> event header + schedule table
---   ::: {.program-talks}     -> talk details, grouped by session folder
---   ::: {.todo}              -> highlighted "to do" box
+--   ::: {.program-header}                  -> event header
+--   ::: {.program-schedule}                -> event header + schedule
+--   ::: {.program-schedule header="false"} -> schedule only
+--   ::: {.program-schedule talks-page="talks.html"}
+--                                          -> (web) talk titles link to that page
+--   ::: {.program-talks}                   -> talk details, grouped by session folder
+--   ::: {.todo}                            -> highlighted "to do" box
 --
--- The Typst functions called here (event-header, schedule-table, ...) are
--- defined in theme/layout.typ.
+-- If schedule.yml has `draft-notice:`, it's shown above the header (PDF) and
+-- at the top of every web page.
 
 local stringify = pandoc.utils.stringify
 
--- Typst output helpers ---------------------------------------------------
-
-local function typst_string(s)
-  s = s:gsub("\\", "\\\\"):gsub('"', '\\"')
-  return '"' .. s .. '"'
-end
-
--- Convert pandoc blocks to a Typst content block: [ ... ]
-local function typst_content(blocks)
-  local out = pandoc.write(pandoc.Pandoc(blocks), "typst")
-  out = out:gsub("^%s+", ""):gsub("%s+$", "")
-  return "[" .. out .. "]"
-end
-
-local function typst_array(items)
-  if #items == 0 then return "()" end
-  return "(" .. table.concat(items, ", ") .. ",)"
-end
-
--- pairs_list is an ordered list of { key, typst_value }
-local function typst_dict(pairs_list)
-  local parts = {}
-  for _, kv in ipairs(pairs_list) do
-    parts[#parts + 1] = kv[1] .. ": " .. kv[2]
-  end
-  return "(" .. table.concat(parts, ", ") .. ")"
-end
+-- More talks than this in a session -> shown in two columns.
+local TWO_COLUMNS_AFTER = 6
 
 -- Metadata helpers -------------------------------------------------------
 
-local function as_inlines(value)
+-- Metadata value -> Inlines, or nil when missing/empty.
+local function inlines_or_nil(value)
   if value == nil then return nil end
   local t = pandoc.utils.type(value)
-  if t == "Inlines" then return value end
-  if t == "Blocks" then return pandoc.utils.blocks_to_inlines(value) end
-  local s = stringify(value)
-  if s == "" then return nil end
-  return pandoc.Inlines(s)
-end
-
--- Metadata value -> Typst content, or `none` when missing/empty.
-local function content_or_none(value)
-  local inlines = as_inlines(value)
-  if inlines == nil or #inlines == 0 then return "none" end
-  return typst_content({ pandoc.Plain(inlines) })
+  local inl
+  if t == "Inlines" then
+    inl = value
+  elseif t == "Blocks" then
+    inl = pandoc.utils.blocks_to_inlines(value)
+  else
+    local s = stringify(value)
+    if s == "" then return nil end
+    inl = pandoc.Inlines(s)
+  end
+  if #inl == 0 then return nil end
+  return inl
 end
 
 local function as_list(value)
@@ -77,24 +59,6 @@ local function read_file(path)
   return text
 end
 
--- Talks ------------------------------------------------------------------
-
-local function speaker_typst(sp)
-  return typst_dict({
-    { "name", content_or_none(sp.name) },
-    { "honorific", content_or_none(sp.honorific) },
-    { "affiliation", content_or_none(sp.affiliation) },
-    { "affiliation-short", content_or_none(sp["affiliation-short"]) },
-  })
-end
-
-local function link_typst(link)
-  return typst_dict({
-    { "label", content_or_none(link.label) },
-    { "url", typst_string(stringify(link.url or "")) },
-  })
-end
-
 local function sorted_listing(dir)
   local ok, entries = pcall(pandoc.system.list_directory, dir)
   if not ok then return nil end
@@ -102,22 +66,35 @@ local function sorted_listing(dir)
   return entries
 end
 
+-- Loading the data -------------------------------------------------------
+-- Everything is kept as pandoc values here; each writer converts them.
+
 local function load_talk(path, folder, file)
   local doc = pandoc.read(read_file(path), "markdown")
   local m = doc.meta
 
   local speakers, links = {}, {}
-  for _, sp in ipairs(as_list(m.speakers)) do speakers[#speakers + 1] = speaker_typst(sp) end
-  for _, l in ipairs(as_list(m.links)) do links[#links + 1] = link_typst(l) end
+  for _, sp in ipairs(as_list(m.speakers)) do
+    speakers[#speakers + 1] = {
+      name = inlines_or_nil(sp.name),
+      honorific = inlines_or_nil(sp.honorific),
+      affiliation = inlines_or_nil(sp.affiliation),
+      affiliation_short = inlines_or_nil(sp["affiliation-short"]),
+    }
+  end
+  for _, l in ipairs(as_list(m.links)) do
+    links[#links + 1] = { label = inlines_or_nil(l.label), url = stringify(l.url or "") }
+  end
 
   return {
     file = folder .. "/" .. file,
-    type = folder,
+    folder = folder,
+    id = "talk-" .. (file:gsub("%.md$", "")),
     order = tonumber(stringify(m.order or "")) or math.huge,
-    title = content_or_none(m.title),
-    speakers = typst_array(speakers),
-    links = typst_array(links),
-    abstract = #doc.blocks > 0 and typst_content(doc.blocks) or "none",
+    title = inlines_or_nil(m.title),
+    speakers = speakers,
+    links = links,
+    abstract = doc.blocks,
   }
 end
 
@@ -153,81 +130,300 @@ local function load_talks(dir)
   return talks
 end
 
-local function talks_of_type(talks, talk_type)
+local function talks_in(talks, folder)
   local out = {}
   for _, t in ipairs(talks) do
-    if t.type == talk_type then out[#out + 1] = t end
+    if t.folder == folder then out[#out + 1] = t end
   end
   return out
 end
 
--- Placeholder builders ---------------------------------------------------
+local function load_program(meta)
+  local dir = stringify(meta["talks-dir"] or "talks")
+  if not pandoc.path.is_absolute(dir) then
+    local base = quarto.project.directory or pandoc.path.directory(quarto.doc.input_file)
+    dir = pandoc.path.join({ base, dir })
+  end
+  local talks = load_talks(dir)
 
-local function schedule_blocks(meta, talks)
   local ev = meta.event or {}
-
-  local logos = {}
-  for _, path in ipairs(as_list(ev.logos)) do
-    logos[#logos + 1] = "image(" .. typst_string(stringify(path)) .. ", height: 100%)"
+  local event = { logos = {} }
+  for _, key in ipairs({ "kicker", "title", "date", "time", "venue", "note" }) do
+    event[key] = inlines_or_nil(ev[key])
   end
+  for _, path in ipairs(as_list(ev.logos)) do event.logos[#event.logos + 1] = stringify(path) end
 
-  local header = "#event-header(" .. table.concat({
-    "kicker: " .. content_or_none(ev.kicker),
-    "title: " .. content_or_none(ev.title),
-    "date: " .. content_or_none(ev.date),
-    "time: " .. content_or_none(ev.time),
-    "venue: " .. content_or_none(ev.venue),
-    "note: " .. content_or_none(ev.note),
-    "logos: " .. typst_array(logos),
-  }, ",\n  ") .. ")"
-
-  local rows = {}
+  local sessions = {}
   for _, s in ipairs(as_list(meta.sessions)) do
-    local items = {}
-    if s.talks then
-      for _, t in ipairs(talks_of_type(talks, stringify(s.talks))) do
-        items[#items + 1] = typst_dict({ { "title", t.title }, { "speakers", t.speakers } })
-      end
-    end
-    rows[#rows + 1] = typst_dict({
-      { "time", content_or_none(s.time) },
-      { "title", content_or_none(s.title) },
-      { "description", content_or_none(s.description) },
-      { "kind", typst_string(s.kind and stringify(s.kind) or "session") },
-      { "talks", typst_array(items) },
-    })
+    sessions[#sessions + 1] = {
+      time = inlines_or_nil(s.time),
+      title = inlines_or_nil(s.title),
+      description = inlines_or_nil(s.description),
+      kind = s.kind and stringify(s.kind) or "session",
+      talks = s.talks and talks_in(talks, stringify(s.talks)) or {},
+    }
   end
 
-  local table_call = "#schedule-table(" .. typst_array(rows) .. ")"
-  return pandoc.RawBlock("typst", header .. "\n\n" .. table_call .. "\n")
+  local groups, known = {}, {}
+  for _, tf in ipairs(as_list(meta["talk-folders"])) do
+    local folder = stringify(tf.folder)
+    known[folder] = true
+    groups[#groups + 1] = {
+      folder = folder,
+      label = inlines_or_nil(tf.label) or pandoc.Inlines(folder),
+      talks = talks_in(talks, folder),
+    }
+  end
+  for _, t in ipairs(talks) do
+    if not known[t.folder] then
+      quarto.log.warning("program.lua: " .. t.file .. " is in folder '" .. t.folder ..
+        "', which is not listed under talk-folders in schedule.yml")
+    end
+  end
+
+  return { event = event, sessions = sessions, groups = groups, draft = inlines_or_nil(meta["draft-notice"]) }
 end
 
-local function talk_detail_blocks(meta, talks)
-  local blocks = pandoc.Blocks({})
-  local known = {}
+-- Display URL: drop the scheme and any trailing slash.
+local function short_url(url)
+  return (url:gsub("^https?://", ""):gsub("/$", ""))
+end
 
-  for _, tt in ipairs(as_list(meta["talk-folders"])) do
-    local id = stringify(tt.folder)
-    known[id] = true
-    local entries = {}
-    for _, t in ipairs(talks_of_type(talks, id)) do
-      entries[#entries + 1] = "#talk-entry(" .. table.concat({
-        "title: " .. t.title,
-        "speakers: " .. t.speakers,
-        "links: " .. t.links,
-        "abstract: " .. t.abstract,
-      }, ",\n  ") .. ")"
+-- PDF writer (Typst) -----------------------------------------------------
+
+local T = {}
+
+function T.str(s)
+  s = s:gsub("\\", "\\\\"):gsub('"', '\\"')
+  return '"' .. s .. '"'
+end
+
+-- Blocks -> Typst content block: [ ... ]
+function T.content(blocks)
+  local out = pandoc.write(pandoc.Pandoc(blocks), "typst")
+  out = out:gsub("^%s+", ""):gsub("%s+$", "")
+  return "[" .. out .. "]"
+end
+
+-- Inlines (or nil) -> Typst content, or `none`.
+function T.inl(inl)
+  if inl == nil then return "none" end
+  return T.content({ pandoc.Plain(inl) })
+end
+
+function T.array(items)
+  if #items == 0 then return "()" end
+  return "(" .. table.concat(items, ", ") .. ",)"
+end
+
+-- pairs_list is an ordered list of { key, typst_value }
+function T.dict(pairs_list)
+  local parts = {}
+  for _, kv in ipairs(pairs_list) do parts[#parts + 1] = kv[1] .. ": " .. kv[2] end
+  return "(" .. table.concat(parts, ", ") .. ")"
+end
+
+function T.speakers(speakers)
+  local out = {}
+  for _, sp in ipairs(speakers) do
+    out[#out + 1] = T.dict({
+      { "name", T.inl(sp.name) },
+      { "honorific", T.inl(sp.honorific) },
+      { "affiliation", T.inl(sp.affiliation) },
+      { "affiliation-short", T.inl(sp.affiliation_short) },
+    })
+  end
+  return T.array(out)
+end
+
+function T.header(event, draft)
+  local logos = {}
+  for _, path in ipairs(event.logos) do
+    logos[#logos + 1] = "image(" .. T.str(path) .. ", height: 100%)"
+  end
+  local args = {}
+  for _, key in ipairs({ "kicker", "title", "date", "time", "venue", "note" }) do
+    args[#args + 1] = key .. ": " .. T.inl(event[key])
+  end
+  args[#args + 1] = "logos: " .. T.array(logos)
+  args[#args + 1] = "draft: " .. T.inl(draft)
+  return pandoc.RawBlock("typst", "#event-header(" .. table.concat(args, ",\n  ") .. ")")
+end
+
+function T.schedule(sessions)
+  local rows = {}
+  for _, s in ipairs(sessions) do
+    local items = {}
+    for _, t in ipairs(s.talks) do
+      items[#items + 1] = T.dict({ { "title", T.inl(t.title) }, { "speakers", T.speakers(t.speakers) } })
     end
-    if #entries > 0 then
-      blocks:insert(pandoc.Header(1, as_inlines(tt.label) or id, pandoc.Attr("talks-" .. id)))
+    rows[#rows + 1] = T.dict({
+      { "time", T.inl(s.time) },
+      { "title", T.inl(s.title) },
+      { "description", T.inl(s.description) },
+      { "kind", T.str(s.kind) },
+      { "talks", T.array(items) },
+    })
+  end
+  return pandoc.RawBlock("typst", "#schedule-table(" .. T.array(rows) .. ")")
+end
+
+function T.talks(groups)
+  local blocks = pandoc.Blocks({})
+  for _, g in ipairs(groups) do
+    if #g.talks > 0 then
+      local entries = {}
+      for _, t in ipairs(g.talks) do
+        local links = {}
+        for _, l in ipairs(t.links) do
+          links[#links + 1] = T.dict({ { "label", T.inl(l.label) }, { "url", T.str(l.url) } })
+        end
+        entries[#entries + 1] = "#talk-entry(" .. table.concat({
+          "title: " .. T.inl(t.title),
+          "speakers: " .. T.speakers(t.speakers),
+          "links: " .. T.array(links),
+          "abstract: " .. (#t.abstract > 0 and T.content(t.abstract) or "none"),
+        }, ",\n  ") .. ")"
+      end
+      -- Written as raw Typst: Quarto shifts pandoc heading levels for PDFs.
+      blocks:insert(pandoc.RawBlock("typst", "#heading(level: 1)" .. T.inl(g.label) .. " <talks-" .. g.folder .. ">"))
       blocks:insert(pandoc.RawBlock("typst", table.concat(entries, "\n\n")))
     end
   end
+  return blocks
+end
 
-  for _, t in ipairs(talks) do
-    if not known[t.type] then
-      quarto.log.warning("program.lua: " .. t.file .. " is in folder '" .. t.type ..
-        "', which is not listed under talk-folders in schedule.yml")
+function T.todo(div)
+  return pandoc.RawBlock("typst", "#todo-box(" .. T.content(div.content) .. ")")
+end
+
+-- Web writer (HTML) ------------------------------------------------------
+-- Class names are styled in theme/web.scss.
+
+local H = {}
+
+function H.attr(s)
+  return (s:gsub("&", "&amp;"):gsub('"', "&quot;"):gsub("<", "&lt;"):gsub(">", "&gt;"))
+end
+
+function H.inl(inl)
+  if inl == nil then return "" end
+  return (pandoc.write(pandoc.Pandoc({ pandoc.Plain(inl) }), "html"):gsub("%s+$", ""))
+end
+
+function H.blocks(blocks)
+  return pandoc.write(pandoc.Pandoc(blocks), "html")
+end
+
+function H.tag(name, class, inner)
+  return "<" .. name .. ' class="' .. class .. '">' .. inner .. "</" .. name .. ">"
+end
+
+-- "Name (Short affiliation)" list for the schedule: a, b & c
+function H.speakers_short(speakers)
+  local parts = {}
+  for _, sp in ipairs(speakers) do
+    local aff = sp.affiliation_short or sp.affiliation
+    parts[#parts + 1] = H.inl(sp.name) .. (aff and (" (" .. H.inl(aff) .. ")") or "")
+  end
+  if #parts <= 1 then return parts[1] or "" end
+  return table.concat(parts, ", ", 1, #parts - 1) .. " &amp; " .. parts[#parts]
+end
+
+function H.draft_banner(draft)
+  return pandoc.RawBlock("html", '<div class="draft-banner" role="note">' .. H.inl(draft) .. "</div>")
+end
+
+function H.header(event)
+  local out = { '<header class="event-header">' }
+  if event.kicker then out[#out + 1] = H.tag("p", "event-header__kicker", H.inl(event.kicker)) end
+  if event.title then out[#out + 1] = H.tag("h1", "event-header__title", H.inl(event.title)) end
+  if event.date then out[#out + 1] = H.tag("p", "event-header__date", H.inl(event.date)) end
+  if event.time then out[#out + 1] = H.tag("p", "event-header__time", H.inl(event.time)) end
+  local place = {}
+  if event.venue then place[#place + 1] = H.inl(event.venue) end
+  if event.note then place[#place + 1] = H.inl(event.note) end
+  if #place > 0 then out[#out + 1] = H.tag("p", "event-header__place", table.concat(place, " · ")) end
+  if #event.logos > 0 then
+    local imgs = {}
+    for _, path in ipairs(event.logos) do imgs[#imgs + 1] = '<img src="' .. H.attr(path) .. '" alt="">' end
+    out[#out + 1] = H.tag("div", "event-header__logos", table.concat(imgs))
+  end
+  out[#out + 1] = "</header>"
+  return pandoc.RawBlock("html", table.concat(out, "\n"))
+end
+
+-- talks_page: page holding the talk details ("" = this page).
+function H.schedule(sessions, talks_page)
+  talks_page = talks_page or ""
+  local out = { '<section class="schedule" aria-label="Schedule">' }
+  for _, s in ipairs(sessions) do
+    local body = { H.tag("h3", "session__title", H.inl(s.title)) }
+    if s.description then body[#body + 1] = H.tag("p", "session__description", H.inl(s.description)) end
+    if #s.talks > 0 then
+      local items = {}
+      for _, t in ipairs(s.talks) do
+        items[#items + 1] = '<li><a class="talk-link" href="' .. H.attr(talks_page) .. '#' .. t.id .. '">' .. H.inl(t.title) .. "</a>" ..
+          H.tag("span", "talk-link__speakers", H.speakers_short(t.speakers)) .. "</li>"
+      end
+      local class = "session__talks" .. (#s.talks > TWO_COLUMNS_AFTER and " session__talks--columns" or "")
+      body[#body + 1] = H.tag("ul", class, table.concat(items))
+    end
+    out[#out + 1] = H.tag("div", "session session--" .. H.attr(s.kind),
+      H.tag("div", "session__time", H.inl(s.time)) ..
+      H.tag("div", "session__body", table.concat(body)))
+  end
+  out[#out + 1] = "</section>"
+  return pandoc.RawBlock("html", table.concat(out, "\n"))
+end
+
+function H.talks(groups)
+  local blocks = pandoc.Blocks({})
+
+  -- "Jump to" links between sessions (the side contents list is hidden on
+  -- small screens, so web.scss shows this there instead).
+  local jumps = {}
+  for _, g in ipairs(groups) do
+    if #g.talks > 0 then
+      jumps[#jumps + 1] = '<a href="#talks-' .. H.attr(g.folder) .. '">' .. H.inl(g.label) .. "</a>"
+    end
+  end
+  if #jumps > 1 then
+    blocks:insert(pandoc.RawBlock("html", '<nav class="talks-jump" aria-label="Sessions">Jump to: ' ..
+      table.concat(jumps, " · ") .. "</nav>"))
+  end
+
+  for _, g in ipairs(groups) do
+    if #g.talks > 0 then
+      blocks:insert(pandoc.Header(2, g.label, pandoc.Attr("talks-" .. g.folder)))
+      local articles = {}
+      for _, t in ipairs(g.talks) do
+        local speakers = {}
+        for _, sp in ipairs(t.speakers) do
+          local name = (sp.honorific and (H.inl(sp.honorific) .. " ") or "") .. H.inl(sp.name)
+          speakers[#speakers + 1] = '<span class="speaker">' .. H.tag("span", "speaker__name", name) ..
+            (sp.affiliation and H.tag("span", "speaker__affiliation", ", " .. H.inl(sp.affiliation)) or "") ..
+            "</span>"
+        end
+        local parts = {
+          '<article class="talk" id="' .. t.id .. '">',
+          H.tag("h3", "talk__title", H.inl(t.title)),
+          H.tag("p", "talk__speakers", table.concat(speakers)),
+          H.tag("div", "talk__abstract", H.blocks(t.abstract)),
+        }
+        if #t.links > 0 then
+          local items = {}
+          for _, l in ipairs(t.links) do
+            items[#items + 1] = "<li>" ..
+              (l.label and (H.tag("span", "talk__link-label", H.inl(l.label)) .. ": ") or "") ..
+              '<a href="' .. H.attr(l.url) .. '">' .. H.attr(short_url(l.url)) .. "</a></li>"
+          end
+          parts[#parts + 1] = H.tag("ul", "talk__links", table.concat(items))
+        end
+        parts[#parts + 1] = "</article>"
+        articles[#articles + 1] = table.concat(parts, "\n")
+      end
+      blocks:insert(pandoc.RawBlock("html", table.concat(articles, "\n")))
     end
   end
   return blocks
@@ -236,25 +432,34 @@ end
 -- Main -------------------------------------------------------------------
 
 function Pandoc(doc)
-  if not quarto.doc.is_format("typst") then return nil end
-
-  local dir = stringify(doc.meta["talks-dir"] or "talks")
-  if not pandoc.path.is_absolute(dir) then
-    local base = quarto.project.directory or pandoc.path.directory(quarto.doc.input_file)
-    dir = pandoc.path.join({ base, dir })
+  local W
+  if quarto.doc.is_format("typst") then
+    W = T
+  elseif quarto.doc.is_format("html") then
+    W = H
+  else
+    return nil
   end
-  local talks = load_talks(dir)
+
+  local program = load_program(doc.meta)
 
   doc.blocks = doc.blocks:walk({
     Div = function(div)
-      if div.classes:includes("program-schedule") then
-        return schedule_blocks(doc.meta, talks)
+      if div.classes:includes("program-header") then
+        return W.header(program.event, program.draft)
+      elseif div.classes:includes("program-schedule") then
+        local schedule = W.schedule(program.sessions, div.attributes["talks-page"])
+        if div.attributes.header == "false" then return schedule end
+        return pandoc.Blocks({ W.header(program.event, program.draft), schedule })
       elseif div.classes:includes("program-talks") then
-        return talk_detail_blocks(doc.meta, talks)
-      elseif div.classes:includes("todo") then
-        return pandoc.RawBlock("typst", "#todo-box(" .. typst_content(div.content) .. ")")
+        return W.talks(program.groups)
+      elseif div.classes:includes("todo") and W.todo then
+        return W.todo(div)
       end
     end,
   })
+
+  -- Web: draft banner at the top of every page.
+  if W == H and program.draft then doc.blocks:insert(1, H.draft_banner(program.draft)) end
   return doc
 end

@@ -1,0 +1,252 @@
+// Web theme: matches theme/theme-apsrc.typ (the PDF) and the APSRC
+// conference website. Satoshi is loaded from Fontshare in _quarto.yml.
+
+/*-- scss:defaults --*/
+
+$apsrc-primary: #0000A8;   // website primary (hsl 240 100% 33%)
+$apsrc-ink: #111827;       // website body text
+$apsrc-grey: #4B5563;      // website secondary text
+$apsrc-line: #DADDE2;      // borders
+$apsrc-break: #F3F4F6;     // shaded schedule rows
+
+$primary: $apsrc-primary;
+$body-color: $apsrc-ink;
+$link-color: $apsrc-primary;
+$headings-color: $apsrc-primary;
+$headings-font-weight: 700;
+$font-family-sans-serif: "Satoshi", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$border-color: $apsrc-line;
+
+// Navigation bar: white, like the conference website.
+$navbar-bg: #fff;
+$navbar-fg: $apsrc-ink;
+$navbar-hl: $apsrc-primary;
+
+/*-- scss:rules --*/
+
+// Navigation ------------------------------------------------------------------
+
+#quarto-header .navbar {
+  border-bottom: 1px solid $apsrc-line;
+}
+
+.navbar-brand .navbar-title {
+  color: $apsrc-primary;
+  font-weight: 700;
+}
+
+// Phones: let the long site title wrap instead of being cut off.
+@media (max-width: 575.98px) {
+  .navbar-brand-container { max-width: calc(100% - 6rem); }
+
+  .navbar-brand,
+  .navbar-brand .navbar-title {
+    white-space: normal;
+    font-size: 1rem;
+    line-height: 1.25 !important;
+  }
+}
+
+// Talks page: "Jump to" session links, shown when the side contents list isn't.
+.talks-jump {
+  font-size: 0.95rem;
+  color: $apsrc-grey;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .talks-jump { display: none; }
+}
+
+// Page title on the Talks page
+.quarto-title .title {
+  color: $apsrc-primary;
+  font-weight: 700;
+}
+
+// Draft notice ----------------------------------------------------------------
+
+.draft-banner {
+  background: #FFF6DC;
+  border: 1px solid #E3BD4F;
+  border-radius: 0.25rem;
+  padding: 0.6rem 0.9rem;
+  margin: 0.5rem 0 1.25rem;
+}
+
+// Header ------------------------------------------------------------------
+
+.event-header {
+  margin: 0.5rem 0 1.25rem;
+
+  p { margin: 0 0 0.2rem; }
+}
+
+.event-header__kicker {
+  color: $apsrc-grey;
+  font-weight: 700;
+}
+
+.event-header__title {
+  color: $apsrc-primary;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0.15rem 0 0.75rem;
+}
+
+.event-header__date { font-weight: 700; }
+.event-header__place { color: $apsrc-grey; }
+
+.event-header__logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+
+  img { height: 3rem; width: auto; }
+}
+
+.program-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid $apsrc-primary;
+
+  p { display: contents; }
+}
+
+// Schedule ----------------------------------------------------------------
+
+.schedule {
+  border-bottom: 1px solid $apsrc-line;
+  margin-bottom: 2.5rem;
+}
+
+.session {
+  display: grid;
+  grid-template-columns: 10.5rem 1fr;
+  column-gap: 1rem;
+  padding: 0.85rem 0.75rem;
+  border-top: 1px solid $apsrc-line;
+
+  &:first-child { border-top: 0; }
+}
+
+.session--break { background: $apsrc-break; }
+
+.session__time {
+  color: $apsrc-primary;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.session__title {
+  color: $apsrc-ink;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.session--break .session__title { font-weight: 500; }
+
+.session__description {
+  color: $apsrc-grey;
+  font-size: 0.9rem;
+  margin: 0.2rem 0 0;
+}
+
+.session__talks {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0.15rem;
+  display: grid;
+  gap: 0.6rem 1.5rem;
+
+  li {
+    border-left: 2px solid mix(#fff, $apsrc-primary, 55%);
+    padding-left: 0.65rem;
+  }
+}
+
+.session__talks--columns {
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.talk-link {
+  color: $apsrc-ink;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover, &:focus { color: $apsrc-primary; text-decoration: underline; }
+}
+
+.talk-link__speakers {
+  display: block;
+  color: $apsrc-grey;
+  font-size: 0.85rem;
+}
+
+// Phones: time above the session instead of beside it.
+@media (max-width: 575.98px) {
+  .session {
+    grid-template-columns: 1fr;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .session__time { margin-bottom: 0.15rem; }
+}
+
+// Talk details ------------------------------------------------------------
+
+h2[id^="talks-"] {
+  border-bottom: 1px solid $apsrc-primary;
+  padding-bottom: 0.35rem;
+  margin-top: 2.5rem;
+}
+
+.talk {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid $apsrc-line;
+  scroll-margin-top: 1rem;
+
+  &:target .talk__title { text-decoration: underline; text-decoration-thickness: 2px; }
+}
+
+.talk__title {
+  color: $apsrc-primary;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+}
+
+.talk__speakers { margin-bottom: 0.8rem; }
+
+.speaker { display: block; }
+.speaker__name { font-weight: 700; }
+.speaker__affiliation { color: $apsrc-grey; }
+
+.talk__links {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.talk__link-label { font-weight: 700; }
+
+// Placeholders --------------------------------------------------------------
+
+.todo {
+  background: #FFF6DC;
+  border: 1px solid #E3BD4F;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+
+  &::before { content: "To do: "; font-weight: 700; }
+}

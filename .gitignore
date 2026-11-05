@@ -1,4 +1,5 @@
 # Quarto build output
+_site/
 _output/
 .quarto/
 /*.typ

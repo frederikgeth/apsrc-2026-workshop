@@ -1,5 +1,6 @@
 ---
-# Full program: schedule, then talk details.
+format: typst
+# Full program (PDF): schedule, then talk details.
 # Both are built from schedule.yml and talks/.
 ---
 

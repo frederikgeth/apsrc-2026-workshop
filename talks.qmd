@@ -1,0 +1,14 @@
+---
+# Web: talks page (abstracts). Built from talks/; one section per session
+# folder, in the order listed under talk-folders in schedule.yml.
+format: html
+title: "Talks"
+toc: true
+toc-title: "Sessions"
+---
+
+Abstracts for the panel session and ‘short-circuit’ talks, in running order.
+For times, see the [schedule](index.qmd).
+
+::: {.program-talks}
+:::
